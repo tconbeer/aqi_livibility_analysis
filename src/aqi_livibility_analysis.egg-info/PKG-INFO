@@ -1,0 +1,15 @@
+Metadata-Version: 2.1
+Name: aqi-livibility-analysis
+Version: 0.1.0a1
+Summary: An analysis of EPA AQI data to determine the livibility of certain cities
+Home-page: UNKNOWN
+Author: Ted Conbeer
+Author-email: ted@shandy.io
+License: Apache-2.0
+Platform: UNKNOWN
+Requires-Python: >=3.9.0
+Description-Content-Type: text/markdown
+License-File: LICENSE
+
+An analysis of EPA AQI data to determine the livibility of certain cities
+

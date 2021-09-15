@@ -1,0 +1,25 @@
+[[source]]
+url = "https://pypi.org/simple"
+verify_ssl = true
+name = "pypi"
+
+[packages]
+aqi_livibility_analysis = {path = ".", editable = true}
+# graphene 3 causes graphql-core deps error with pip
+graphene = "<3"
+dagit = "*"
+
+[dev-packages]
+black = "*"
+flake8 = "*"
+isort = "*"
+mypy = "*"
+pre-commit = "*"
+pytest = ">=5.2"
+pytest-cov = ">=2.0"
+
+[requires]
+python_version = "3.9"
+
+[pipenv]
+allow_prereleases = true
