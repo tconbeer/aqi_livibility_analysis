@@ -10,3 +10,8 @@ use_parentheses = true
 ensure_newline_before_comments = true
 line_length = 88
 src_paths = ["src", "tests"]
+
+[tool.pytest.ini_options]
+markers = [
+    "slow: marks tests as slow (deselect with '-m \"not slow\"')",
+]
