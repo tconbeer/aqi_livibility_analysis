@@ -1,5 +1,6 @@
 from datetime import datetime
 from pathlib import Path
+from typing import Any
 
 import requests
 from dagster import resource
@@ -29,15 +30,17 @@ def airnow_resource() -> AirNow:
 
 
 class LocalFilesystem:
-    def get_path_from_key(self, key: str) -> str:
-        ROOT = Path(__file__).parent.parent.parent
-        return str(ROOT / "data" / key)
+    def __init__(self, storage_dir: str) -> None:
+        self.storage_dir: Path = Path(storage_dir)
 
-    def save_buffer(self, buffer: bytes, path: str) -> None:
+    def get_path_from_key(self, key: str) -> str:
+        return str(self.storage_dir / key)
+
+    def write_data(self, data: bytes, path: str) -> None:
         p = Path(path)
         p.parent.mkdir(exist_ok=True, parents=True)
         with open(p, "wb") as f:
-            f.write(buffer)
+            f.write(data)
 
     def exists(self, path: str) -> bool:
         p = Path(path)
@@ -45,5 +48,5 @@ class LocalFilesystem:
 
 
 @resource
-def local_filesystem_resource() -> LocalFilesystem:
-    return LocalFilesystem()
+def local_filesystem_resource(init_context: Any) -> LocalFilesystem:
+    return LocalFilesystem(storage_dir=init_context.instance.storage_directory())

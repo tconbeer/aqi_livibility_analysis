@@ -14,3 +14,11 @@ This analysis must not be used for any regulatory purposes; analysis contains pr
 # Architecture
 
 This project uses Google Cloud and dagster
+
+# How To
+
+Launch the dagster daemon and dagit together with:
+
+```
+dagster-daemon run & dagit -f src/aqi_livibility_analysis/graphs.py
+```

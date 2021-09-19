@@ -1,10 +1,17 @@
 import gzip
+import warnings
 from typing import Any, List
 
-from dagster import op
+from dagster import ExperimentalWarning, op
+
+# ignore warnings related to using new API with op
+warnings.filterwarnings("ignore", category=ExperimentalWarning)
 
 
-@op
+@op(
+    config_schema={"target_date": str, "should_overwrite": bool},
+    required_resource_keys={"airnow", "fs"},
+)
 def download_hourly_data(context: Any) -> List[str]:
     target_date = context.op_config["target_date"]
     should_overwrite = context.op_config["should_overwrite"]
@@ -18,7 +25,7 @@ def download_hourly_data(context: Any) -> List[str]:
         if should_overwrite or not fs.exists(path):
             data = airnow.get_hourly_data(date=target_date, hour=hour)
             compressed_data = gzip.compress(data)
-            fs.save_buffer(buffer=compressed_data, path=path)
+            fs.write_data(data=compressed_data, path=path)
 
         paths.append(path)
 
