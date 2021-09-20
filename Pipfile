@@ -7,20 +7,18 @@ name = "pypi"
 aqi_livibility_analysis = {path = ".", editable = true}
 # graphene 3 causes graphql-core deps error with pip
 graphene = "<3"
-dagit = "*"
-dagster_gcp = "*"
-requests = "*"
 
 [dev-packages]
 black = "*"
 flake8 = "*"
+gcsfs = "*" # required by pandas.read_parquet from gcs url
 isort = "*"
 mypy = "*"
 pre-commit = "*"
 pytest = ">=5.2"
 pytest-cov = ">=2.0"
-requests-mock = "*"
-types-requests = "*"
+requests-mock = "*" # required by test mocking airnow api
+types-requests = "*" # type stubs for requests library
 
 [requires]
 python_version = "3.9"

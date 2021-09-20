@@ -15,5 +15,11 @@ setup(
     package_dir={"": "src"},
     license="Apache-2.0",
     python_requires=">=3.9.0",
-    install_requires=[],
+    install_requires=[
+        "dagit>=0.12.10",
+        "dagster-gcp",
+        "dagster-pandas",
+        "pyarrow",
+        "requests",
+    ],
 )
