@@ -9,4 +9,5 @@ src/aqi_livibility_analysis/resources.py
 src/aqi_livibility_analysis.egg-info/PKG-INFO
 src/aqi_livibility_analysis.egg-info/SOURCES.txt
 src/aqi_livibility_analysis.egg-info/dependency_links.txt
+src/aqi_livibility_analysis.egg-info/requires.txt
 src/aqi_livibility_analysis.egg-info/top_level.txt

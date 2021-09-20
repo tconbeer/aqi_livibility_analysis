@@ -1,5 +1,4 @@
 .mypy_cache/
 .pytest_cache/
-data/
 *.egg-info/
 __pycache__
