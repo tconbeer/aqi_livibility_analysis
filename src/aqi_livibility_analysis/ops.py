@@ -25,7 +25,6 @@ def download_hourly_data(context: Any) -> List[FileHandle]:
         data = airnow.get_hourly_data(date=target_date, hour=hour)
         compressed_data = gzip.compress(data)
         path = fs.write_data(data=compressed_data, ext="gzip")
-
         paths.append(path)
 
     return paths
@@ -78,11 +77,8 @@ def transform_hourly_data(
 
     for p in [h.path_desc for h in raw_files]:
         raw_df = _read_hourly_file_to_dataframe(p)
-
         transformed_bytes = raw_df.to_parquet(compression=None, index=False)
-
         path = fs.write_data(data=transformed_bytes, ext="parquet")
-
         transformed_files.append(path)
 
     return transformed_files
