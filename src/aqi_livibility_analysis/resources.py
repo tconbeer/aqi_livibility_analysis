@@ -7,7 +7,7 @@ from dagster import resource
 
 
 class AirNow:
-    def build_hourly_url(self, date: str, hour: int) -> str:
+    def _build_hourly_url(self, date: str, hour: int) -> str:
         dt = datetime.fromisoformat(date)
         BASE_URL = "https://s3-us-west-1.amazonaws.com//files.airnowtech.org/airnow/"
         date_url = (
@@ -19,7 +19,7 @@ class AirNow:
         return url
 
     def get_hourly_data(self, date: str, hour: int) -> bytes:
-        url = self.build_hourly_url(date, hour)
+        url = self._build_hourly_url(date, hour)
         response = requests.get(url, allow_redirects=True)
         return response.content
 

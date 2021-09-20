@@ -14,4 +14,5 @@ src_paths = ["src", "tests"]
 [tool.pytest.ini_options]
 markers = [
     "slow: marks tests as slow (deselect with '-m \"not slow\"')",
+    "gcp: depends on google cloud, may incur costs (deselect with '-m \"not gcp\"')",
 ]

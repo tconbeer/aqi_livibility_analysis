@@ -1,6 +1,6 @@
 .PHONY: test
 test:
-	pytest -m "not slow"
+	pytest -m "not (slow or gcs)"
 	isort .
 	black .
 	flake8 .

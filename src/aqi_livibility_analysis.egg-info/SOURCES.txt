@@ -3,6 +3,7 @@ README.md
 pyproject.toml
 setup.py
 src/aqi_livibility_analysis/__init__.py
+src/aqi_livibility_analysis/graphs.py
 src/aqi_livibility_analysis/ops.py
 src/aqi_livibility_analysis/resources.py
 src/aqi_livibility_analysis.egg-info/PKG-INFO

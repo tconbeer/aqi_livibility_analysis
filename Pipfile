@@ -8,6 +8,7 @@ aqi_livibility_analysis = {path = ".", editable = true}
 # graphene 3 causes graphql-core deps error with pip
 graphene = "<3"
 dagit = "*"
+dagster_gcp = "*"
 requests = "*"
 
 [dev-packages]
@@ -18,6 +19,7 @@ mypy = "*"
 pre-commit = "*"
 pytest = ">=5.2"
 pytest-cov = ">=2.0"
+requests-mock = "*"
 types-requests = "*"
 
 [requires]
