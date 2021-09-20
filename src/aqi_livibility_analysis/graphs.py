@@ -8,7 +8,7 @@ from dagster import (
     local_file_manager,
     repository,
 )
-from dagster_gcp import gcs_file_manager
+from dagster_gcp import gcs_file_manager, import_gcs_paths_to_bq
 
 from aqi_livibility_analysis.ops import download_hourly_data, transform_hourly_data
 from aqi_livibility_analysis.resources import airnow_resource
@@ -24,7 +24,7 @@ def simple_download_graph() -> None:
 
 @graph
 def gcp_etl_graph() -> None:
-    transform_hourly_data(download_hourly_data())
+    import_gcs_paths_to_bq(transform_hourly_data(download_hourly_data()))
 
 
 @daily_partitioned_config(start_date="2018-01-01")
