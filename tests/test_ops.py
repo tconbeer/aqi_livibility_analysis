@@ -27,7 +27,7 @@ def test_local_download_hourly_data() -> None:
     assert handles
     assert len(handles) == 24
 
-    for p in [Path(h.path) for h in handles]:
+    for p in [Path(h.path_desc) for h in handles]:
         assert p.exists()
         assert p.suffix == ".gzip"
 
@@ -55,7 +55,7 @@ def test_gcs_download_hourly_data() -> None:
     assert handles
     assert len(handles) == 24
 
-    for p in [h.gcs_path for h in handles]:
+    for p in [h.path_desc for h in handles]:
         assert p.endswith(".gzip")
 
 
@@ -83,7 +83,7 @@ class TestTransform:
         assert transformed_handles is not None
         assert len(transformed_handles) == 1
 
-        transformed_file_path = transformed_handles[0].path
+        transformed_file_path = transformed_handles[0].path_desc
         df = pd.read_parquet(transformed_file_path)
 
         assert df is not None

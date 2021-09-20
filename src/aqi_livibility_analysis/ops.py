@@ -54,7 +54,7 @@ def _read_hourly_file_to_dataframe(
             "observed_time": str,
             "site_id": str,
             "site_name": str,
-            "gmt_offset": np.int32,
+            "gmt_offset": np.float64,
             "parameter_name": str,
             "reporting_units": str,
             "value": np.float64,
@@ -76,7 +76,7 @@ def transform_hourly_data(
     transformed_files: List[FileHandle] = []
     fs = context.resources.fs
 
-    for p in [h.path for h in raw_files]:
+    for p in [h.path_desc for h in raw_files]:
         raw_df = _read_hourly_file_to_dataframe(p)
 
         transformed_bytes = raw_df.to_parquet(compression=None, index=False)
