@@ -69,7 +69,7 @@ gcp_etl_job = gcp_etl_graph.to_job(
             {
                 "project": "aqi-livibility-analysis",
                 "gcs_bucket": "aqi-raw-data",
-                "gcs_prefix": "prod",
+                "gcs_prefix": "prod/aqi_hourly_observations",
             }
         ),
         "bigquery": bigquery_resource,
