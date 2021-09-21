@@ -68,6 +68,66 @@ def _read_hourly_file_to_dataframe(
     return df
 
 
+def _read_site_file_to_dataframe(
+    filepath_or_buffer: Union[str, BinaryIO, TextIO]
+) -> pd.DataFrame:
+    df = pd.read_csv(
+        filepath_or_buffer,
+        sep="|",
+        names=[
+            "site_id",
+            "parameter_name",
+            "site_code",
+            "site_name",
+            "status",
+            "data_source_id",
+            "data_source_agency",
+            "epa_region",
+            "latitude",
+            "longitude",
+            "elevation",
+            "gmt_offset",
+            "country_code",
+            "blank1",
+            "blank2",
+            "msa_code",
+            "msa_name",
+            "state_code",
+            "state_name",
+            "county_code",
+            "county_name",
+        ],
+        index_col=False,
+        dtype={
+            "site_id": str,
+            "parameter_name": str,
+            "site_code": str,
+            "site_name": str,
+            "status": str,
+            "data_source_id": str,
+            "data_source_agency": str,
+            "epa_region": str,
+            "latitude": np.float64,
+            "longitude": np.float64,
+            "elevation": str,
+            "gmt_offset": np.float64,
+            "country_code": str,
+            "blank1": str,
+            "blank2": str,
+            "msa_code": str,
+            "msa_name": str,
+            "state_code": str,
+            "state_name": str,
+            "county_code": str,
+            "county_name": str,
+        },
+        compression="gzip",
+        encoding_errors="ignore",
+    )
+
+    return df
+
+
 @op(required_resource_keys={"fs"})
 def transform_hourly_data(context: Any, raw_files: List[FileHandle]) -> List[str]:
     transformed_files: List[FileHandle] = []
