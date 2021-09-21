@@ -47,7 +47,7 @@ def _read_hourly_file_to_dataframe(
             "value",
             "data_source_agency",
         ],
-        index_col="site_id",
+        index_col=False,
         dtype={
             "observed_date": str,
             "observed_time": str,
@@ -69,16 +69,14 @@ def _read_hourly_file_to_dataframe(
 
 
 @op(required_resource_keys={"fs"})
-def transform_hourly_data(
-    context: Any, raw_files: List[FileHandle]
-) -> List[FileHandle]:
+def transform_hourly_data(context: Any, raw_files: List[FileHandle]) -> List[str]:
     transformed_files: List[FileHandle] = []
     fs = context.resources.fs
 
     for p in [h.path_desc for h in raw_files]:
         raw_df = _read_hourly_file_to_dataframe(p)
         transformed_bytes = raw_df.to_parquet(compression=None, index=False)
-        path = fs.write_data(data=transformed_bytes, ext="parquet")
-        transformed_files.append(path)
+        handle = fs.write_data(data=transformed_bytes, ext="parquet")
+        transformed_files.append(handle.path_desc)
 
     return transformed_files

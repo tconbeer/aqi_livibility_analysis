@@ -4,8 +4,14 @@ from typing import List
 import pandas as pd
 import pytest
 from dagster import FileHandle, LocalFileHandle, build_solid_context, local_file_manager
-from dagster_gcp import GCSFileHandle, gcs_file_manager
+from dagster_gcp import (
+    GCSFileHandle,
+    bigquery_resource,
+    gcs_file_manager,
+    import_gcs_paths_to_bq,
+)
 
+from aqi_livibility_analysis import GCP_PROJECT
 from aqi_livibility_analysis.ops import (
     _read_hourly_file_to_dataframe,
     download_hourly_data,
@@ -66,31 +72,47 @@ class TestTransform:
         p = test_dir / "data" / "HourlyData_2019011713.dat.gzip"
         return str(p)
 
-    def test_read_hourly_file_to_dataframe(self, raw_file_path: str) -> None:
+    @pytest.fixture
+    def expected_columns(self) -> List[str]:
+        columns = [
+            "observed_at",
+            "site_id",
+            "site_name",
+            "gmt_offset",
+            "parameter_name",
+            "reporting_units",
+            "value",
+            "data_source_agency",
+        ]
+        return columns
+
+    def test_read_hourly_file_to_dataframe(
+        self, raw_file_path: str, expected_columns: List[str]
+    ) -> None:
         df = _read_hourly_file_to_dataframe(raw_file_path)
 
         assert df is not None
-        assert df.shape == (15136, 7)
-        assert "observed_at" in df.columns
-        assert "parameter_name" in df.columns
-        assert "value" in df.columns
+        assert df.shape == (15136, 8)
+        for col in expected_columns:
+            assert col in df.columns
 
-    def test_local_transform_hourly_data(self, raw_file_path: str) -> None:
+    def test_local_transform_hourly_data(
+        self, raw_file_path: str, expected_columns: List[str]
+    ) -> None:
         h = LocalFileHandle(path=raw_file_path)
         context = build_solid_context(resources={"fs": local_file_manager})
-        transformed_handles = transform_hourly_data(context, raw_files=[h])
+        transformed_paths = transform_hourly_data(context, raw_files=[h])
 
-        assert transformed_handles is not None
-        assert len(transformed_handles) == 1
+        assert transformed_paths is not None
+        assert len(transformed_paths) == 1
 
-        transformed_file_path = transformed_handles[0].path_desc
+        transformed_file_path = transformed_paths[0]
         df = pd.read_parquet(transformed_file_path)
 
         assert df is not None
-        assert df.shape == (15136, 7)
-        assert "observed_at" in df.columns
-        assert "parameter_name" in df.columns
-        assert "value" in df.columns
+        assert df.shape == (15136, 8)
+        for col in expected_columns:
+            assert col in df.columns
 
     @pytest.mark.slow
     @pytest.mark.gcp
@@ -98,7 +120,9 @@ class TestTransform:
     @pytest.mark.filterwarnings(
         "ignore:coroutine 'noop' was never awaited:RuntimeWarning"
     )
-    def test_gcs_transform_hourly_data(self, raw_file_path: str) -> None:
+    def test_gcs_transform_hourly_data(
+        self, raw_file_path: str, expected_columns: List[str]
+    ) -> None:
         h = LocalFileHandle(path=raw_file_path)
         context = build_solid_context(
             resources={
@@ -111,16 +135,35 @@ class TestTransform:
                 )
             }
         )
-        transformed_handles = transform_hourly_data(context, raw_files=[h])
+        transformed_paths = transform_hourly_data(context, raw_files=[h])
 
-        assert transformed_handles is not None
-        assert len(transformed_handles) == 1
+        assert transformed_paths is not None
+        assert len(transformed_paths) == 1
 
-        transformed_file_path = transformed_handles[0].gcs_path
+        transformed_file_path = transformed_paths[0]
         df = pd.read_parquet(transformed_file_path)
 
         assert df is not None
-        assert df.shape == (15136, 7)
-        assert "observed_at" in df.columns
-        assert "parameter_name" in df.columns
-        assert "value" in df.columns
+        assert df.shape == (15136, 8)
+        for col in expected_columns:
+            assert col in df.columns
+
+
+@pytest.mark.slow
+@pytest.mark.gcp
+def test_import_gcs_paths_to_bq() -> None:
+    uri = (
+        "gs://aqi-raw-data/test/test_import_gcs_paths_to_bq/"
+        "7f901271-7d76-4d9d-85f6-42188a361196.parquet"
+    )
+    context = build_solid_context(
+        config={
+            "destination": f"{GCP_PROJECT}.test.test_import_gcs_paths_to_bq",
+            "load_job_config": {
+                "source_format": "PARQUET",
+                "write_disposition": "WRITE_TRUNCATE",
+            },
+        },
+        resources={"bigquery": bigquery_resource.configured({"project": GCP_PROJECT})},
+    )
+    import_gcs_paths_to_bq(context, [uri])

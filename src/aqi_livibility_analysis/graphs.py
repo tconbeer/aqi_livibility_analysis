@@ -8,8 +8,9 @@ from dagster import (
     local_file_manager,
     repository,
 )
-from dagster_gcp import gcs_file_manager, import_gcs_paths_to_bq
+from dagster_gcp import bigquery_resource, gcs_file_manager, import_gcs_paths_to_bq
 
+from aqi_livibility_analysis import GCP_PROJECT
 from aqi_livibility_analysis.ops import download_hourly_data, transform_hourly_data
 from aqi_livibility_analysis.resources import airnow_resource
 
@@ -42,8 +43,21 @@ local_download_job = simple_download_graph.to_job(
 
 
 @daily_partitioned_config(start_date="2018-01-01")
-def gcp_etl_config(start: Any, _end: Any) -> Dict[str, Dict[str, Dict[str, Any]]]:
-    config = {"ops": {"download_hourly_data": {"config": {"target_date": str(start)}}}}
+def gcp_etl_config(start: Any, _end: Any) -> Dict[str, Dict[str, object]]:
+    config = {
+        "ops": {
+            "download_hourly_data": {"config": {"target_date": str(start)}},
+            "import_gcs_paths_to_bq": {
+                "config": {
+                    "destination": f"{GCP_PROJECT}.prod.aqi_hourly_observations",
+                    "load_job_config": {
+                        "source_format": "PARQUET",
+                        "write_disposition": "WRITE_APPEND",
+                    },
+                },
+            },
+        }
+    }
     return config
 
 
@@ -58,6 +72,7 @@ gcp_etl_job = gcp_etl_graph.to_job(
                 "gcs_prefix": "prod",
             }
         ),
+        "bigquery": bigquery_resource,
     },
 )
 
