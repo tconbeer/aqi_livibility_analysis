@@ -77,9 +77,9 @@ gcp_etl_job = gcp_etl_graph.to_job(
 )
 
 
-@repository
-def local_jobs() -> List[Any]:
-    return [local_download_job]
+# @repository
+# def local_jobs() -> List[Any]:
+#     return [local_download_job]
 
 
 @repository
