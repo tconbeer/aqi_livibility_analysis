@@ -2,3 +2,5 @@
 .pytest_cache/
 *.egg-info/
 __pycache__
+instance/
+src/aqi_livibility_analysis.egg-info
