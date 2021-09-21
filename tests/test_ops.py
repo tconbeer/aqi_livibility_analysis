@@ -14,6 +14,7 @@ from dagster_gcp import (
 from aqi_livibility_analysis import GCP_PROJECT
 from aqi_livibility_analysis.ops import (
     _read_hourly_file_to_dataframe,
+    _read_site_file_to_dataframe,
     download_hourly_data,
     transform_hourly_data,
 )
@@ -167,3 +168,40 @@ def test_import_gcs_paths_to_bq() -> None:
         resources={"bigquery": bigquery_resource.configured({"project": GCP_PROJECT})},
     )
     import_gcs_paths_to_bq(context, [uri])
+
+
+def test_read_site_file_to_dataframe() -> None:
+    test_dir = Path(__file__).parent
+    p = test_dir / "data" / "monitoring_site_locations.dat.gzip"
+
+    df = _read_site_file_to_dataframe(str(p))
+
+    assert df is not None
+    assert df.shape == (18755, 21)
+
+    columns = [
+        "site_id",
+        "parameter_name",
+        "site_code",
+        "site_name",
+        "status",
+        "data_source_id",
+        "data_source_agency",
+        "epa_region",
+        "latitude",
+        "longitude",
+        "elevation",
+        "gmt_offset",
+        "country_code",
+        "blank1",
+        "blank2",
+        "msa_code",
+        "msa_name",
+        "state_code",
+        "state_name",
+        "county_code",
+        "county_name",
+    ]
+
+    for col in columns:
+        assert col in df.columns
