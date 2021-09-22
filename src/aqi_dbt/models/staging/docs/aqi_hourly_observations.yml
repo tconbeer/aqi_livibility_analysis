@@ -1,0 +1,24 @@
+version: 2
+
+models:
+  - name: aqi_hourly_observations
+    description: "{{ doc('aqi_hourly_observations') }}"
+    columns:
+      - name: id
+        tests:
+          - not_null
+          - unique
+      - name: observed_at
+      - name: observed_date
+      - name: site_id
+        tests:
+          - not_null
+      - name: site_name
+      - name: data_source_agency
+      - name: parameter_name
+        tests:
+          - not_null
+      - name: reporting_units
+      - name: observed_value
+        tests:
+          - not_null
