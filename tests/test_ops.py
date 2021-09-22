@@ -17,6 +17,7 @@ from aqi_livibility_analysis.ops import (
     _read_site_file_to_dataframe,
     download_hourly_data,
     transform_hourly_data,
+    transform_site_data,
 )
 from aqi_livibility_analysis.resources import airnow_resource
 
@@ -170,38 +171,83 @@ def test_import_gcs_paths_to_bq() -> None:
     import_gcs_paths_to_bq(context, [uri])
 
 
-def test_read_site_file_to_dataframe() -> None:
-    test_dir = Path(__file__).parent
-    p = test_dir / "data" / "monitoring_site_locations.dat.gzip"
+class TestSiteTransform:
+    @pytest.fixture
+    def raw_file_path(self) -> str:
+        test_dir = Path(__file__).parent
+        p = test_dir / "data" / "monitoring_site_locations.dat.gzip"
+        return str(p)
 
-    df = _read_site_file_to_dataframe(str(p))
+    @pytest.fixture
+    def expected_columns(self) -> List[str]:
+        columns = [
+            "site_id",
+            "parameter_name",
+            "site_code",
+            "site_name",
+            "status",
+            "data_source_id",
+            "data_source_agency",
+            "epa_region",
+            "latitude",
+            "longitude",
+            "elevation",
+            "gmt_offset",
+            "country_code",
+            "blank1",
+            "blank2",
+            "msa_code",
+            "msa_name",
+            "state_code",
+            "state_name",
+            "county_code",
+            "county_name",
+            "observed_date",
+        ]
+        return columns
 
-    assert df is not None
-    assert df.shape == (18755, 21)
+    def test_read_site_file_to_dataframe(
+        self, raw_file_path: str, expected_columns: List[str]
+    ) -> None:
 
-    columns = [
-        "site_id",
-        "parameter_name",
-        "site_code",
-        "site_name",
-        "status",
-        "data_source_id",
-        "data_source_agency",
-        "epa_region",
-        "latitude",
-        "longitude",
-        "elevation",
-        "gmt_offset",
-        "country_code",
-        "blank1",
-        "blank2",
-        "msa_code",
-        "msa_name",
-        "state_code",
-        "state_name",
-        "county_code",
-        "county_name",
-    ]
+        df = _read_site_file_to_dataframe(raw_file_path, observed_date="2021-06-03")
 
-    for col in columns:
-        assert col in df.columns
+        assert df is not None
+        assert df.shape == (18755, 22)
+        for col in expected_columns:
+            assert col in df.columns
+
+    @pytest.mark.slow
+    @pytest.mark.gcp
+    @pytest.mark.filterwarnings("ignore:The loop argument:DeprecationWarning")
+    @pytest.mark.filterwarnings(
+        "ignore:coroutine 'noop' was never awaited:RuntimeWarning"
+    )
+    def test_gcs_transform_site_data(
+        self, raw_file_path: str, expected_columns: List[str]
+    ) -> None:
+        h = LocalFileHandle(path=raw_file_path)
+        context = build_solid_context(
+            config={"target_date": "2021-06-03"},
+            resources={
+                "fs": gcs_file_manager.configured(
+                    {
+                        "project": "aqi-livibility-analysis",
+                        "gcs_bucket": "aqi-raw-data",
+                        "gcs_prefix": "test/test_gcs_transform_site_data",
+                    }
+                )
+            },
+        )
+        transformed_paths = transform_site_data(context, raw_files=[h])
+
+        assert transformed_paths is not None
+        assert len(transformed_paths) == 1
+
+        transformed_file_path = transformed_paths[0]
+        df = pd.read_parquet(transformed_file_path)
+
+        assert df is not None
+        assert df.shape == (18755, 22)
+        for col in expected_columns:
+            assert col in df.columns

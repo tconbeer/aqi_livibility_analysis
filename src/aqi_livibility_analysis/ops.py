@@ -1,5 +1,6 @@
 import gzip
 import warnings
+from datetime import datetime
 from typing import Any, BinaryIO, List, TextIO, Union
 
 import numpy as np
@@ -28,6 +29,22 @@ def download_hourly_data(context: Any) -> List[FileHandle]:
         paths.append(path)
 
     return paths
+
+
+@op(
+    config_schema={"target_date": str},
+    required_resource_keys={"airnow", "fs"},
+)
+def download_site_data(context: Any) -> List[FileHandle]:
+    target_date = context.op_config["target_date"]
+    airnow = context.resources.airnow
+    fs = context.resources.fs
+
+    data = airnow.get_site_data(date=target_date)
+    compressed_data = gzip.compress(data)
+    path = fs.write_data(data=compressed_data, ext="gzip")
+
+    return [path]
 
 
 def _read_hourly_file_to_dataframe(
@@ -69,7 +86,7 @@ def _read_hourly_file_to_dataframe(
 
 
 def _read_site_file_to_dataframe(
-    filepath_or_buffer: Union[str, BinaryIO, TextIO]
+    filepath_or_buffer: Union[str, BinaryIO, TextIO], observed_date: str
 ) -> pd.DataFrame:
     df = pd.read_csv(
         filepath_or_buffer,
@@ -125,6 +142,8 @@ def _read_site_file_to_dataframe(
         encoding_errors="ignore",
     )
 
+    df["observed_date"] = datetime.fromisoformat(observed_date).date()
+
     return df
 
 
@@ -135,6 +154,21 @@ def transform_hourly_data(context: Any, raw_files: List[FileHandle]) -> List[str
 
     for p in [h.path_desc for h in raw_files]:
         raw_df = _read_hourly_file_to_dataframe(p)
+        transformed_bytes = raw_df.to_parquet(compression=None, index=False)
+        handle = fs.write_data(data=transformed_bytes, ext="parquet")
+        transformed_files.append(handle.path_desc)
+
+    return transformed_files
+
+
+@op(required_resource_keys={"fs"}, config_schema={"target_date": str})
+def transform_site_data(context: Any, raw_files: List[FileHandle]) -> List[str]:
+    transformed_files: List[FileHandle] = []
+    fs = context.resources.fs
+    target_date = context.op_config["target_date"]
+
+    for p in [h.path_desc for h in raw_files]:
+        raw_df = _read_site_file_to_dataframe(p, observed_date=target_date)
         transformed_bytes = raw_df.to_parquet(compression=None, index=False)
         handle = fs.write_data(data=transformed_bytes, ext="parquet")
         transformed_files.append(handle.path_desc)
