@@ -19,6 +19,6 @@ clean-targets:         # directories to be removed by `dbt clean`
 
 
 models:
-  aqi_dbt:
-    base:
-      +materialized: ephemeral
+  # aqi_dbt:
+  #   staging:
+  #     +materialized: ephemeral

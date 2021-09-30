@@ -17,7 +17,9 @@ with
     renamed as (
 
         select
-            {{ dbt_utils.surrogate_key(['observed_at', 'site_id', 'parameter_name']) }} as id,
+            {{ 
+                dbt_utils.surrogate_key(['observed_at', 'site_id', 'parameter_name']) 
+            }} as id,
 
             observed_at,
             extract(date from observed_at) as observed_date,
