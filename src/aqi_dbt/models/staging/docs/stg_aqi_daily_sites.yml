@@ -1,8 +1,8 @@
 version: 2
 
 models:
-  - name: aqi_sites
-    description: "{{ doc('aqi_sites') }}"
+  - name: stg_aqi_daily_sites
+    description: "{{ doc('aqi_daily_sites') }}"
     columns:
       - name: id
         tests:

@@ -34,7 +34,10 @@ with
             safe_cast(elevation as float64) as elevation,
 
             epa_region,
-            country_code,
+            coalesce(
+                country_code,
+                case when data_source_id = 'MOE' then 'JP' end
+            ) as country_code,
             msa_code,
             msa_name,
             state_code,
