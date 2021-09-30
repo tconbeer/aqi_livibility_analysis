@@ -1,7 +1,7 @@
 version: 2
 
 models:
-  - name: aqi_hourly_observations
+  - name: stg_aqi_hourly_observations
     description: "{{ doc('aqi_hourly_observations') }}"
     columns:
       - name: id
@@ -13,6 +13,9 @@ models:
       - name: site_id
         tests:
           - not_null
+          - relationships:
+              to: ref('dim_sites')
+              field: site_id
       - name: site_name
       - name: data_source_agency
       - name: parameter_name

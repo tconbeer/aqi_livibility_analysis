@@ -1,4 +1,4 @@
-{% docs aqi_sites %}
+{% docs aqi_daily_sites %}
 
 # AQI: Monitoring Sites
 

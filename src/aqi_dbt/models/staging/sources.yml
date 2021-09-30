@@ -8,5 +8,5 @@ sources:
         description: "{{ doc('aqi_hourly_observations') }}"
           
       - name: aqi_sites
-        description: "{{ doc('aqi_sites') }}"
+        description: "{{ doc('aqi_daily_sites') }}"
           
