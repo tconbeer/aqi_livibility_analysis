@@ -30,12 +30,15 @@ with
 
             parameter_name,
             reporting_units,
-            value as observed_value,
+            `value` as observed_value,
 
         from source_table
 
         where
-            1=1
+            (
+                source_table.`value` >= 0
+                or parameter_name = 'TEMP'
+            )
             {% if is_incremental() -%}
             and observed_at > (select max(observed_at) from {{ this }})
             {%- endif %}
