@@ -13,9 +13,6 @@ models:
       - name: site_id
         tests:
           - not_null
-          - relationships:
-              to: ref('dim_sites')
-              field: site_id
       - name: site_name
       - name: data_source_agency
       - name: parameter_name
