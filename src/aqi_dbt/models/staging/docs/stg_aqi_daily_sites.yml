@@ -1,0 +1,37 @@
+version: 2
+
+models:
+  - name: stg_aqi_daily_sites
+    description: "{{ doc('aqi_daily_sites') }}"
+    columns:
+      - name: id
+        tests:
+          - not_null
+          - unique
+      - name: observed_date
+        tests:
+          - not_null
+      - name: parameter_name
+        tests:
+          - not_null
+      - name: site_id
+        tests:
+          - not_null
+      - name: site_name
+      - name: data_source_id
+      - name: data_source_agency
+      - name: latitude
+        tests:
+          - not_null
+      - name: longitude
+        tests:
+          - not_null
+      - name: elevation
+      - name: epa_region
+      - name: country_code
+      - name: msa_code
+      - name: msa_name
+      - name: state_code
+      - name: state_name
+      - name: county_code
+      - name: county_name

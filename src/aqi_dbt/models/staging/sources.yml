@@ -1,0 +1,12 @@
+version: 2
+
+sources:
+  - name: aqi_raw_data
+    schema: prod
+    tables:
+      - name: aqi_hourly_observations
+        description: "{{ doc('aqi_hourly_observations') }}"
+          
+      - name: aqi_sites
+        description: "{{ doc('aqi_daily_sites') }}"
+          

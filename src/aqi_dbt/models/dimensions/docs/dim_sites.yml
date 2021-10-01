@@ -1,0 +1,41 @@
+version: 2
+
+models:
+  - name: dim_sites
+    description: >
+      The raw data in stg_aqi_daily_sites has a very fine grain, and is missing
+      nearly half of the entries needed to join cleanly with 
+      stg_aqi_hourly_observations. Here we aggregate by site_id and select
+      the most recent daily record for each site
+
+    columns:
+      - name: site_id
+        tests:
+          - not_null
+          - unique
+      - name: last_observed_date
+      - name: site_name
+        tests:
+          - not_null
+      - name: data_source_id
+      - name: data_source_agency
+        tests:
+          - not_null
+      - name: geo
+        descrtipion: >
+          BQ-native GEOGRAPHY representation of lat/lon
+      - name: geohash
+        descrtipion: >
+          A [geohash](https://en.wikipedia.org/wiki/Geohash) of the lat/lon.
+      - name: elevation
+      - name: epa_region
+      - name: country_code
+      - name: msa_code
+      - name: msa_name
+        tests:
+          - not_null:
+              where: msa_code is not null
+      - name: state_code
+      - name: state_name
+      - name: county_code
+      - name: county_name

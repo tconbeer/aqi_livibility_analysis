@@ -1,0 +1,31 @@
+version: 2
+
+macros:
+  - name: convert_obs_to_aqi
+    description: >
+      This macro takes an observation (with its units) of a parameter,
+      and returns the equivalent on the AQI scale.
+
+      Only works for OZONE, PM2.5, and PM10 parameters; all other 
+      parameters will have a null AQI.
+
+      The AQI equation is a linear interpolation with breakpoints that
+      are specific to each parameter. For details, see:
+      https://forum.airnowtech.org/t/the-aqi-equation/169
+    arguments:
+      - name: parameter_name
+        type: string
+        description: >
+          A field name (as a string) or a string literal of an EPA
+          parameter. Currently only data values corresponding to
+          OZONE, PM2.5, or PM10 will generate an AQI.
+      - name: reporting_units
+        type: string
+        description: >
+          The units of the observed value. Must be in PPB for OZONE,
+          or UG/M3 for PM2.5 or PM10
+      - name: observed_value
+        type: string
+        description: >
+          The value to be interpolated into the AQI equation.
+    

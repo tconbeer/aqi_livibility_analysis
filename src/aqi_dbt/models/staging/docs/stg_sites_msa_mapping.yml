@@ -1,0 +1,17 @@
+version: 2
+
+models:
+  - name: stg_sites_msa_mapping
+    description: >
+      Additional mappings for sites to MSAs, where they are missing in the data.
+    columns:
+      - name: site_id
+        tests:
+          - not_null
+          - unique
+      - name: msa_code
+        tests:
+          - not_null
+      - name: msa_name
+        tests:
+          - not_null
