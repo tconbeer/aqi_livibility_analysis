@@ -5,15 +5,11 @@ models:
     description: >
       This is basically "one big table" that includes every observation,
       and all of the relevant information from that observation's site
-      dimension. In this model, we also convert raw measurements of
-      pollutants to their AQI score, using a macro.
+      dimension. 
 
-    tests:
-      - dbt_utils.expression_is_true:
-          expression: >
-            observed_aqi >= 0
-            and observed_aqi <= 500
-          condition: observed_aqi is not null
+      Grain is per-site, per-hour. Individual parameter observations are
+      nested into the observations array (of structs). Site info is 
+      contained in the site_data struct.
             
     columns:
       - name: id
@@ -25,44 +21,40 @@ models:
       - name: site_id
         tests:
           - not_null
-      - name: site_name
+      - name: site_data.site_name
         tests:
           - not_null
-      - name: data_source_agency
+      - name: site_data.data_source_agency
         tests:
           - not_null
-      - name: latitude
+      - name: site_data.latitude
         tests:
           - not_null
-      - name: longitude
+      - name: site_data.longitude
         tests:
           - not_null
-      - name: elevation
+      - name: site_data.geo
+        descrtipion: >
+          BQ-native GEOGRAPHY representation of lat/lon
         tests:
           - not_null
-      - name: epa_region
-      - name: country_code
+      - name: site_data.elevation
         tests:
           - not_null
-      - name: msa_code
-      - name: msa_name
-      - name: state_code
-      - name: state_name
-      - name: county_code
-      - name: county_name
-      - name: parameter_name
+      - name: site_data.epa_region
+      - name: site_data.country_code
         tests:
           - not_null
-      - name: reporting_units
-        tests:
-          - not_null
-      - name: observed_value
-        tests:
-          - not_null
-          - nonnegative:
-              where: parameter_name != 'TEMP'
+      - name: site_data.msa_code
+      - name: site_data.msa_name
+      - name: site_data.state_code
+      - name: site_data.state_name
+      - name: site_data.county_code
+      - name: site_data.county_name
+      - name: observations
+        description: >
+          An array of structs; each struct is an individual observation
+          of a single parameter (e.g., OZONE, PM2.5)
       - name: observed_aqi
-        tests:
-          - not_null:
-              where: >
-                parameter_name in ('OZONE', 'PM10', 'PM2.5')
+        description: >
+          The max of the observed aqi from each individual observation

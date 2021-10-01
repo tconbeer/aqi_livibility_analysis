@@ -2,7 +2,7 @@ version: 2
 
 macros:
   - name: convert_obs_to_aqi
-  - description: >
+    description: >
       This macro takes an observation (with its units) of a parameter,
       and returns the equivalent on the AQI scale.
 
@@ -12,7 +12,7 @@ macros:
       The AQI equation is a linear interpolation with breakpoints that
       are specific to each parameter. For details, see:
       https://forum.airnowtech.org/t/the-aqi-equation/169
-  - arguments:
+    arguments:
       - name: parameter_name
         type: string
         description: >

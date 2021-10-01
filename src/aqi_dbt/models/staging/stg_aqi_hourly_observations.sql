@@ -31,6 +31,11 @@ with
             parameter_name,
             reporting_units,
             `value` as observed_value,
+            {{ convert_obs_to_aqi(
+                "source_table.parameter_name",
+                "source_table.reporting_units",
+                "source_table.`value`",
+            ) }} as observed_aqi,
 
         from source_table
 
