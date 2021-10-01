@@ -1,0 +1,41 @@
+version: 2
+
+models:
+  - name: agg_msa_daily_observations
+    description: >
+      This model aggregates fct_aqi_hourly_observations twice, first
+      across all sites in an MSA, and then across all hours in a day.
+
+      The key metric is the AQI; there are a few ways to aggregate
+      AQI; we take both the mean and max across sites, and then
+      the (simple) mean and max across hours of the day. We
+      also count the number of hours that the site mean and max are
+      above our defined "livibility" threshold.
+    
+    columns:
+      - name: id
+        tests:
+          - not_null
+          - unique
+      - name: msa_name
+        tests:
+          - not_null
+      - name: observed_date
+        tests:
+          - not_null
+      - name: mean_observed_aqi
+        tests:
+          - not_null
+      - name: max_observed_aqi
+        tests:
+          - not_null
+      - name: hourly_observed_aqis
+      - name: number_of_sites
+      - name: sites
+      - name: observations
+      - name: hours_mean_above_aqi_threshold
+        tests:
+          - not_null
+      - name: hours_max_above_aqi_threshold
+        tests:
+          - not_null

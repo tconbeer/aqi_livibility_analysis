@@ -3,6 +3,14 @@ version: 2
 models:
   - name: stg_aqi_hourly_observations
     description: "{{ doc('aqi_hourly_observations') }}"
+
+    tests:
+      - dbt_utils.expression_is_true:
+          expression: >
+            observed_aqi >= 0
+            and observed_aqi <= 500
+          condition: observed_aqi is not null
+
     columns:
       - name: id
         tests:
@@ -22,3 +30,10 @@ models:
       - name: observed_value
         tests:
           - not_null
+          - nonnegative:
+              where: parameter_name != 'TEMP'
+      - name: observed_aqi
+        tests:
+          - not_null:
+              where: >
+                parameter_name in ('OZONE', 'PM10', 'PM2.5')

@@ -48,6 +48,16 @@ with
                 order by observed_date asc
                 rows between unbounded preceding and unbounded following
             )
+    ),
+
+    final as (
+
+        select
+            aggregated.*,
+            st_geogpoint(aggregated.longitude, aggregated.latitude) as geo
+        
+        from aggregated
+
     )
 
-select * from aggregated
+select * from final
