@@ -17,10 +17,11 @@
 
 with
     fct_aqi_hourly_observations as (select * from {{ ref('fct_aqi_hourly_observations') }}),
+    dim_msa as (select * from {{ ref('dim_msa') }}),
 
     msa_grouped as (
         select
-            site_data.msa_name as msa_name,
+            site_data.msa_code as msa_code,
             observed_at,
             observed_date,
 
@@ -31,16 +32,20 @@ with
             array_agg(site_data) as sites,
             array_concat_agg(observations) as observations,
         
-        from fct_aqi_hourly_observations
+        from fct_aqi_hourly_observations        
 
-        where site_data.msa_name is not null
+        where
+            site_data.msa_name is not null
+            {% if is_incremental() -%}
+            and observed_date >= (select max(observed_date) from {{ this }})
+            {%- endif %}
         
         {{ dbt_utils.group_by(3) }}
     ),
 
     daily_grouped as (
         select
-            msa_name,
+            msa_code,
             observed_date,
 
             avg(mean_observed_aqi) as mean_observed_aqi,
@@ -83,9 +88,14 @@ with
 
         select
             {{ dbt_utils.surrogate_key(["msa_name", "observed_date"]) }} as id,
-            daily_grouped.*
+            daily_grouped.*,
+            dim_msa.msa_name,
+            dim_msa.msa_centroid,
+            dim_msa.msa_centroid_geohash,
+            dim_msa.msa_elevation,
         
         from daily_grouped
+        join dim_msa on daily_grouped.msa_code = dim_msa.msa_code
 
     )
 
