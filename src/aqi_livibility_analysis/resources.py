@@ -7,19 +7,36 @@ from dagster import resource
 
 
 class AirNow:
+    def __init__(self) -> None:
+        self.BASE_URL = (
+            "https://s3-us-west-1.amazonaws.com//files.airnowtech.org/airnow/"
+        )
+        self.SUFFIX = ".dat"
+
     def _build_hourly_url(self, date: str, hour: int) -> str:
         dt = datetime.fromisoformat(date)
-        BASE_URL = "https://s3-us-west-1.amazonaws.com//files.airnowtech.org/airnow/"
         date_url = (
             f"{dt.year}/{dt.year}{dt.month:02}{dt.day:02}/"
             f"HourlyData_{dt.year}{dt.month:02}{dt.day:02}{hour:02}"
         )
-        SUFFIX = ".dat"
-        url = BASE_URL + date_url + SUFFIX
+        url = self.BASE_URL + date_url + self.SUFFIX
+        return url
+
+    def _build_site_url(self, date: str) -> str:
+        dt = datetime.fromisoformat(date)
+        date_url = (
+            f"{dt.year}/{dt.year}{dt.month:02}{dt.day:02}/" f"monitoring_site_locations"
+        )
+        url = self.BASE_URL + date_url + self.SUFFIX
         return url
 
     def get_hourly_data(self, date: str, hour: int) -> bytes:
         url = self._build_hourly_url(date, hour)
+        response = requests.get(url, allow_redirects=True)
+        return response.content
+
+    def get_site_data(self, date: str) -> bytes:
+        url = self._build_site_url(date)
         response = requests.get(url, allow_redirects=True)
         return response.content
 
@@ -29,6 +46,7 @@ def airnow_resource() -> AirNow:
     return AirNow()
 
 
+# todo: remove this unused class/ resource
 class LocalFilesystem:
     def __init__(self, storage_dir: str) -> None:
         self.storage_dir: Path = Path(storage_dir)

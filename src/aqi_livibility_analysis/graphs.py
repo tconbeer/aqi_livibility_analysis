@@ -11,7 +11,12 @@ from dagster import (
 from dagster_gcp import bigquery_resource, gcs_file_manager, import_gcs_paths_to_bq
 
 from aqi_livibility_analysis import GCP_PROJECT
-from aqi_livibility_analysis.ops import download_hourly_data, transform_hourly_data
+from aqi_livibility_analysis.ops import (
+    download_hourly_data,
+    download_site_data,
+    transform_hourly_data,
+    transform_site_data,
+)
 from aqi_livibility_analysis.resources import airnow_resource
 
 # ignore warnings related to using new API with graph, etc.
@@ -26,6 +31,11 @@ def simple_download_graph() -> None:
 @graph
 def gcp_etl_graph() -> None:
     import_gcs_paths_to_bq(transform_hourly_data(download_hourly_data()))
+
+
+@graph
+def site_locations_etl_graph() -> None:
+    import_gcs_paths_to_bq(transform_site_data(download_site_data()))
 
 
 @daily_partitioned_config(start_date="2018-01-01")
@@ -61,6 +71,26 @@ def gcp_etl_config(start: Any, _end: Any) -> Dict[str, Dict[str, object]]:
     return config
 
 
+@daily_partitioned_config(start_date="2018-01-01")
+def site_locations_etl_config(start: Any, _end: Any) -> Dict[str, Dict[str, object]]:
+    config = {
+        "ops": {
+            "download_site_data": {"config": {"target_date": str(start)}},
+            "transform_site_data": {"config": {"target_date": str(start)}},
+            "import_gcs_paths_to_bq": {
+                "config": {
+                    "destination": f"{GCP_PROJECT}.prod.aqi_sites",
+                    "load_job_config": {
+                        "source_format": "PARQUET",
+                        "write_disposition": "WRITE_APPEND",
+                    },
+                },
+            },
+        }
+    }
+    return config
+
+
 gcp_etl_job = gcp_etl_graph.to_job(
     config=gcp_etl_config,
     resource_defs={
@@ -69,7 +99,22 @@ gcp_etl_job = gcp_etl_graph.to_job(
             {
                 "project": "aqi-livibility-analysis",
                 "gcs_bucket": "aqi-raw-data",
-                "gcs_prefix": "prod",
+                "gcs_prefix": "prod/aqi_hourly_observations",
+            }
+        ),
+        "bigquery": bigquery_resource,
+    },
+)
+
+site_locations_etl_job = site_locations_etl_graph.to_job(
+    config=site_locations_etl_config,
+    resource_defs={
+        "airnow": airnow_resource,
+        "fs": gcs_file_manager.configured(
+            {
+                "project": "aqi-livibility-analysis",
+                "gcs_bucket": "aqi-raw-data",
+                "gcs_prefix": "prod/sites",
             }
         ),
         "bigquery": bigquery_resource,
@@ -77,11 +122,11 @@ gcp_etl_job = gcp_etl_graph.to_job(
 )
 
 
-@repository
-def local_jobs() -> List[Any]:
-    return [local_download_job]
+# @repository
+# def local_jobs() -> List[Any]:
+#     return [local_download_job]
 
 
 @repository
 def gcp_jobs() -> List[Any]:
-    return [gcp_etl_job]
+    return [gcp_etl_job, site_locations_etl_job]

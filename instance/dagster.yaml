@@ -2,4 +2,11 @@ local_artifact_storage:
   module: dagster.core.storage.root
   class: LocalArtifactStorage
   config:
-    base_dir: "~/open/aqi_livibility_analysis/data"
+    base_dir:
+      env: DAGSTER_LOCAL_ARTIFACT_STORAGE
+
+run_coordinator:
+  module: dagster.core.run_coordinator
+  class: QueuedRunCoordinator
+  config:
+    max_concurrent_runs: 10
