@@ -12,13 +12,16 @@ data-paths: ["data"]
 macro-paths: ["macros"]
 snapshot-paths: ["snapshots"]
 
-target-path: "target"  # directory which will store compiled SQL files
-clean-targets:         # directories to be removed by `dbt clean`
+target-path: "target"
+clean-targets:
   - "target"
   - "dbt_modules"
 
 
-models:
-  # aqi_dbt:
-  #   staging:
-  #     +materialized: ephemeral
+seeds:
+  aqi_dbt:
+    seed_sites_msa_mapping:
+      +column_types:
+        site_id: string
+        msa_code: string
+        msa_name: string
