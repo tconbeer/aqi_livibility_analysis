@@ -24,14 +24,21 @@ models:
         tests:
           - not_null
       - name: mean_observed_aqi
-        tests:
-          - not_null
       - name: max_observed_aqi
-        tests:
-          - not_null
       - name: hourly_observed_aqis
       - name: number_of_sites
       - name: sites
+      - name: msa_centroid
+        description: >
+          A GEOGRAPHY object for the calculated centroid of the MSA's sites
+          on this day
+        tests:
+          - not_null
+      - name: msa_centroid_geohash
+        description: >
+          A geohash of the msa_centroid GEOGRAPHY
+        tests:
+          - not_null
       - name: observations
       - name: hours_mean_above_aqi_threshold
         tests:

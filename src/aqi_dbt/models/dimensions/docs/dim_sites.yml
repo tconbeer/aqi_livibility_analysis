@@ -21,8 +21,12 @@ models:
       - name: data_source_agency
         tests:
           - not_null
-      - name: latitude
-      - name: longitude
+      - name: geo
+        descrtipion: >
+          BQ-native GEOGRAPHY representation of lat/lon
+      - name: geohash
+        descrtipion: >
+          A [geohash](https://en.wikipedia.org/wiki/Geohash) of the lat/lon.
       - name: elevation
       - name: epa_region
       - name: country_code

@@ -39,7 +39,7 @@ with
                 case when data_source_id = 'MOE' then 'JP' end
             ) as country_code,
             msa_code,
-            msa_name,
+            trim(msa_name) as msa_name,
             state_code,
             state_name,
             county_code,

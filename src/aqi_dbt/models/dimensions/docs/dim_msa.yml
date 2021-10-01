@@ -1,0 +1,29 @@
+version: 2
+
+models:
+  - name: dim_msa
+    description: >
+      A dimension table for MSA summary statistics.
+
+    columns:
+      - name: msa_code
+        tests:
+          - not_null
+          - unique
+      - name: msa_name
+        tests:
+          - not_null
+      - name: msa_centroid
+        descrtipion: >
+          BQ-native GEOGRAPHY representation of MSA's centroid lat/lon
+        tests:
+          - not_null
+      - name: msa_centroid_geohash
+        descrtipion: >
+          A [geohash](https://en.wikipedia.org/wiki/Geohash) of the 
+          centroid lat/lon.
+        tests:
+          - not_null
+      - name: msa_elevation
+        tests:
+          - not_null

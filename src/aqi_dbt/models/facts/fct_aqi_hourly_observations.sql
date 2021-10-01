@@ -37,6 +37,12 @@ with
 
         from stg_aqi_hourly_observations
 
+        where
+            1=1
+            {% if is_incremental() -%}
+            and observed_at > (select max(observed_at) from {{ this }})
+            {%- endif %}
+
         group by 1, 2, 3
     ),
 
@@ -55,8 +61,6 @@ with
                 grouped.site_id,
                 dim_sites.site_name,
                 dim_sites.data_source_agency,
-                dim_sites.latitude,
-                dim_sites.longitude,
                 dim_sites.geo,
                 dim_sites.elevation,
                 dim_sites.epa_region,
