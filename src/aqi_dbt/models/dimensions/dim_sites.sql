@@ -7,6 +7,7 @@
 
 with
     stg_aqi_daily_sites as (select * from {{ ref('stg_aqi_daily_sites') }}),
+    stg_sites_msa_mapping as (select * from {{ ref('stg_sites_msa_mapping') }}),
     aggregated as (
 
         select distinct
@@ -50,13 +51,44 @@ with
             )
     ),
 
+    joined as (
+
+        select
+            aggregated.site_id,
+            aggregated.last_observed_date,
+            aggregated.site_name,
+            aggregated.data_source_id,
+            aggregated.data_source_agency,
+            st_geogpoint(aggregated.longitude, aggregated.latitude) as geo,
+            aggregated.elevation,
+            aggregated.epa_region,
+            aggregated.country_code,
+            coalesce(
+                aggregated.msa_code,
+                stg_sites_msa_mapping.msa_code
+            ) as msa_code,
+            coalesce(
+                aggregated.msa_name,
+                stg_sites_msa_mapping.msa_name
+            ) as msa_name,
+            aggregated.state_code,
+            aggregated.state_name,
+            aggregated.county_code,
+            aggregated.county_name,
+        
+        from aggregated
+        left join stg_sites_msa_mapping 
+            on aggregated.site_id = stg_sites_msa_mapping.site_id
+
+    ),
+
     final as (
 
         select
-            aggregated.*,
-            st_geogpoint(aggregated.longitude, aggregated.latitude) as geo
+            joined.*,
+            st_geohash(geo, 8) as geohash,
         
-        from aggregated
+        from joined
 
     )
 

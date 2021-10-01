@@ -27,12 +27,6 @@ models:
       - name: site_data.data_source_agency
         tests:
           - not_null
-      - name: site_data.latitude
-        tests:
-          - not_null
-      - name: site_data.longitude
-        tests:
-          - not_null
       - name: site_data.geo
         descrtipion: >
           BQ-native GEOGRAPHY representation of lat/lon
