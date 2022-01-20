@@ -9,16 +9,22 @@ with
     stg_aqi_daily_sites as (select * from {{ ref('stg_aqi_daily_sites') }}),
     stg_sites_msa_mapping as (select * from {{ ref('stg_sites_msa_mapping') }}),
     aggregated as (
-
+        
         select distinct
             site_id,
-
-            last_value(observed_date respect nulls) over (site_window) as last_observed_date,
-
+            
+            last_value(observed_date respect nulls) over (
+                site_window
+            ) as last_observed_date,
+            
             last_value(site_name respect nulls) over (site_window) as site_name,
             
-            last_value(data_source_id respect nulls) over (site_window) as data_source_id,
-            last_value(data_source_agency respect nulls) over (site_window) as data_source_agency,
+            last_value(data_source_id respect nulls) over (
+                site_window
+            ) as data_source_id,
+            last_value(data_source_agency respect nulls) over (
+                site_window
+            ) as data_source_agency,
             
             last_value(latitude respect nulls) over (site_window) as latitude,
             last_value(longitude respect nulls) over (site_window) as longitude,
@@ -32,17 +38,16 @@ with
             last_value(state_name respect nulls) over (site_window) as state_name,
             last_value(county_code respect nulls) over (site_window) as county_code,
             last_value(county_name respect nulls) over (site_window) as county_name,
-
+            
         from stg_aqi_daily_sites
-        
-        where 
-            observed_date is not null 
+        where
+            observed_date is not null
             and parameter_name is not null
             and site_name is not null
             and latitude is not null
             and longitude is not null
             and country_code is not null
-
+            
         window
             site_window as (
                 partition by site_id
@@ -50,9 +55,9 @@ with
                 rows between unbounded preceding and unbounded following
             )
     ),
-
+    
     joined as (
-
+        
         select
             aggregated.site_id,
             aggregated.last_observed_date,
@@ -63,33 +68,19 @@ with
             aggregated.elevation,
             aggregated.epa_region,
             aggregated.country_code,
-            coalesce(
-                aggregated.msa_code,
-                stg_sites_msa_mapping.msa_code
-            ) as msa_code,
-            coalesce(
-                aggregated.msa_name,
-                stg_sites_msa_mapping.msa_name
-            ) as msa_name,
+            coalesce(aggregated.msa_code, stg_sites_msa_mapping.msa_code) as msa_code,
+            coalesce(aggregated.msa_name, stg_sites_msa_mapping.msa_name) as msa_name,
             aggregated.state_code,
             aggregated.state_name,
             aggregated.county_code,
             aggregated.county_name,
-        
+            
         from aggregated
-        left join stg_sites_msa_mapping 
-            on aggregated.site_id = stg_sites_msa_mapping.site_id
-
+        left join
+            stg_sites_msa_mapping on aggregated.site_id = stg_sites_msa_mapping.site_id
     ),
-
-    final as (
-
-        select
-            joined.*,
-            st_geohash(geo, 8) as geohash,
-        
-        from joined
-
-    )
-
-select * from final
+    
+    final as (select joined.*, st_geohash(geo, 8) as geohash, from joined)
+    
+select *
+from final

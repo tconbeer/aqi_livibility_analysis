@@ -22,7 +22,8 @@ end
     (400.0, 500),
 ] -%}
 case
-    when {{ reporting_units }} != 'PPB' then null
+    when {{ reporting_units }} != 'PPB'
+    then null
     else {{ interpolate(observed_value, breakpoints) }}
 end
 {%- endmacro -%}
@@ -37,7 +38,8 @@ end
     (500.4, 500),
 ] -%}
 case
-    when {{ reporting_units }} != 'UG/M3' then null
+    when {{ reporting_units }} != 'UG/M3'
+    then null
     else {{ interpolate(observed_value, breakpoints) }}
 end
 {%- endmacro -%}
@@ -52,7 +54,8 @@ end
     (604.0, 500),
 ] -%}
 case
-    when {{ reporting_units }} != 'UG/M3' then null
+    when {{ reporting_units }} != 'UG/M3'
+    then null
     else {{ interpolate(observed_value, breakpoints) }}
 end
 {%- endmacro -%}
@@ -63,16 +66,17 @@ end
 {%- set prev.aqi = 0 -%}
 round(
     case
-    {%- for concentration, aqi in breakpoints %}
+        {%- for concentration, aqi in breakpoints %}
         when {{ observed_value }} <= {{ concentration }}
-        then (
-            ({{ aqi }} - {{ prev.aqi }}) 
-            / ({{ concentration }} - {{ prev.concentration }})
-            * ({{ observed_value }} - {{ prev.concentration }})
-        ) + {{ prev.aqi }}
-        {%- set prev.concentration = concentration -%}
-        {%- set prev.aqi = aqi -%}
-    {%- endfor %}
+        then
+            (
+                ({{ aqi }} - {{ prev.aqi }}) / (
+                    {{ concentration }} - {{ prev.concentration }}
+                ) * ({{ observed_value }} - {{ prev.concentration }})
+            ) + {{ prev.aqi }}
+            {%- set prev.concentration = concentration -%}
+            {%- set prev.aqi = aqi -%}
+        {%- endfor %}
         else {{ prev.aqi }}
     end
 )
