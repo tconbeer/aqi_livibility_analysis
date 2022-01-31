@@ -1,29 +1,29 @@
 {{
     config(
-        materialized = 'incremental',
-        incremental_strategy = 'insert_overwrite',
-        partition_by = {
-            'field': 'observed_at', 
-            'data_type': 'timestamp',
-            'granularity': 'month'
+        materialized="incremental",
+        incremental_strategy="insert_overwrite",
+        partition_by={
+            "field": "observed_at",
+            "data_type": "timestamp",
+            "granularity": "month",
         },
-        cluster_by = ['site_id', 'observed_date'],
-        unique_key = 'id',
+        cluster_by=["site_id", "observed_date"],
+        unique_key="id",
     )
 }}
 
 with
     stg_aqi_hourly_observations as (
-        select * from {{ ref('stg_aqi_hourly_observations') }}
+        select * from {{ ref("stg_aqi_hourly_observations") }}
     ),
-    dim_sites as (select * from {{ ref('dim_sites') }}),
-    
+    dim_sites as (select * from {{ ref("dim_sites") }}),
+
     grouped as (
         select
             stg_aqi_hourly_observations.observed_at,
             stg_aqi_hourly_observations.observed_date,
             stg_aqi_hourly_observations.site_id,
-            
+
             array_agg(
                 struct(
                     stg_aqi_hourly_observations.site_id,
@@ -34,30 +34,28 @@ with
                     stg_aqi_hourly_observations.observed_aqi
                 )
             ) as observations,
-            
+
             max(stg_aqi_hourly_observations.observed_aqi) as observed_aqi,
-            
+
         from stg_aqi_hourly_observations
         where
             1 = 1
             {% if is_incremental() -%}
             and observed_at > (select max(observed_at) from {{ this }})
             {%- endif %}
-            
+
         group by 1, 2, 3
     ),
-    
+
     joined as (
         select
-            {{ dbt_utils.surrogate_key([
-                "grouped.site_id",
-                "grouped.observed_at"
-            ]) }} as id,
-            
+            {{ dbt_utils.surrogate_key(["grouped.site_id", "grouped.observed_at"]) }}
+            as id,
+
             grouped.observed_at,
             grouped.observed_date,
             grouped.site_id,
-            
+
             struct(
                 grouped.site_id,
                 dim_sites.site_name,
@@ -73,15 +71,15 @@ with
                 dim_sites.county_code,
                 dim_sites.county_name
             ) as site_data,
-            
+
             grouped.observations,
             grouped.observed_aqi,
-            
+
         from grouped
         -- this filters out ~700k records from 29 site_ids that are not
         -- currently in dim_sites
         join dim_sites on grouped.site_id = dim_sites.site_id
     )
-    
+
 select *
 from joined
