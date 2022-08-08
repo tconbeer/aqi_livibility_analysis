@@ -1,29 +1,35 @@
 {{
     config(
-        materialized = 'table',
-        cluster_by = ['site_id'],
+        materialized="table",
+        cluster_by=["site_id"],
     )
 }}
 
 with
-    stg_aqi_daily_sites as (select * from {{ ref('stg_aqi_daily_sites') }}),
-    stg_sites_msa_mapping as (select * from {{ ref('stg_sites_msa_mapping') }}),
+    stg_aqi_daily_sites as (select * from {{ ref("stg_aqi_daily_sites") }}),
+    stg_sites_msa_mapping as (select * from {{ ref("stg_sites_msa_mapping") }}),
     aggregated as (
 
         select distinct
             site_id,
 
-            last_value(observed_date respect nulls) over (site_window) as last_observed_date,
+            last_value(observed_date respect nulls) over (
+                site_window
+            ) as last_observed_date,
 
             last_value(site_name respect nulls) over (site_window) as site_name,
-            
-            last_value(data_source_id respect nulls) over (site_window) as data_source_id,
-            last_value(data_source_agency respect nulls) over (site_window) as data_source_agency,
-            
+
+            last_value(data_source_id respect nulls) over (
+                site_window
+            ) as data_source_id,
+            last_value(data_source_agency respect nulls) over (
+                site_window
+            ) as data_source_agency,
+
             last_value(latitude respect nulls) over (site_window) as latitude,
             last_value(longitude respect nulls) over (site_window) as longitude,
             last_value(elevation respect nulls) over (site_window) as elevation,
-            
+
             last_value(epa_region respect nulls) over (site_window) as epa_region,
             last_value(country_code respect nulls) over (site_window) as country_code,
             last_value(msa_code respect nulls) over (site_window) as msa_code,
@@ -34,9 +40,9 @@ with
             last_value(county_name respect nulls) over (site_window) as county_name,
 
         from stg_aqi_daily_sites
-        
-        where 
-            observed_date is not null 
+
+        where
+            observed_date is not null
             and parameter_name is not null
             and site_name is not null
             and latitude is not null
@@ -63,33 +69,20 @@ with
             aggregated.elevation,
             aggregated.epa_region,
             aggregated.country_code,
-            coalesce(
-                aggregated.msa_code,
-                stg_sites_msa_mapping.msa_code
-            ) as msa_code,
-            coalesce(
-                aggregated.msa_name,
-                stg_sites_msa_mapping.msa_name
-            ) as msa_name,
+            coalesce(aggregated.msa_code, stg_sites_msa_mapping.msa_code) as msa_code,
+            coalesce(aggregated.msa_name, stg_sites_msa_mapping.msa_name) as msa_name,
             aggregated.state_code,
             aggregated.state_name,
             aggregated.county_code,
             aggregated.county_name,
-        
+
         from aggregated
-        left join stg_sites_msa_mapping 
-            on aggregated.site_id = stg_sites_msa_mapping.site_id
+        left join
+            stg_sites_msa_mapping on aggregated.site_id = stg_sites_msa_mapping.site_id
 
     ),
 
-    final as (
+    final as (select joined.*, st_geohash(geo, 8) as geohash, from joined)
 
-        select
-            joined.*,
-            st_geohash(geo, 8) as geohash,
-        
-        from joined
-
-    )
-
-select * from final
+select *
+from final
