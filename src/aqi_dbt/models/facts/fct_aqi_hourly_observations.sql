@@ -38,6 +38,7 @@ with
             max(stg_aqi_hourly_observations.observed_aqi) as observed_aqi,
 
         from stg_aqi_hourly_observations
+
         where
             1 = 1
             {% if is_incremental() -%}

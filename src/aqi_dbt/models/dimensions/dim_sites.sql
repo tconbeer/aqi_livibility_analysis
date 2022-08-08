@@ -40,6 +40,7 @@ with
             last_value(county_name respect nulls) over (site_window) as county_name,
 
         from stg_aqi_daily_sites
+
         where
             observed_date is not null
             and parameter_name is not null
@@ -78,6 +79,7 @@ with
         from aggregated
         left join
             stg_sites_msa_mapping on aggregated.site_id = stg_sites_msa_mapping.site_id
+
     ),
 
     final as (select joined.*, st_geohash(geo, 8) as geohash, from joined)

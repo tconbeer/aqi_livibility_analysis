@@ -19,6 +19,7 @@ with
         from dim_sites
         where msa_code is not null
         group by 1
+
     ),
 
     final as (
@@ -31,6 +32,7 @@ with
             msa_elevation,
 
         from aggregated
+
     )
 
 select *

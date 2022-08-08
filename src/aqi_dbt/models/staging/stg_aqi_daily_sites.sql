@@ -17,8 +17,11 @@ with
     renamed as (
 
         select
-            {{ dbt_utils.surrogate_key(["observed_date", "site_id", "parameter_name"]) }}
-            as id,
+            {{
+                dbt_utils.surrogate_key(
+                    ["observed_date", "site_id", "parameter_name"]
+                )
+            }} as id,
 
             observed_date,
 
@@ -46,6 +49,7 @@ with
             county_name,
 
         from source_table
+
         where
             1 = 1
             {% if is_incremental() -%}
@@ -55,6 +59,7 @@ with
         -- there are about 5k duplicates in the raw data
         qualify
             row_number() over (partition by observed_date, site_id, parameter_name) = 1
+
     )
 
 select *

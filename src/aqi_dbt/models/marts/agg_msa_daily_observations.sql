@@ -35,13 +35,14 @@ with
             array_concat_agg(observations) as observations,
 
         from fct_aqi_hourly_observations
+
         where
             site_data.msa_name is not null
             {% if is_incremental() -%}
             and observed_date >= (select max(observed_date) from {{ this }})
             {%- endif %}
 
-        group by 1, 2, 3
+            {{ dbt_utils.group_by(3) }}
     ),
 
     daily_grouped as (
@@ -75,6 +76,7 @@ with
             ) as hours_max_above_aqi_threshold,
 
         from msa_grouped
+
         group by 1, 2
     ),
 
@@ -90,6 +92,7 @@ with
 
         from daily_grouped
         join dim_msa on daily_grouped.msa_code = dim_msa.msa_code
+
     )
 
 select *

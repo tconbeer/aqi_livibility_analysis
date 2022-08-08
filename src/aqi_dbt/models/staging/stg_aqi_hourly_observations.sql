@@ -41,6 +41,7 @@ with
             }} as observed_aqi,
 
         from source_table
+
         where
             (source_table.`value` >= 0 or parameter_name = 'TEMP')
             {% if is_incremental() -%}
@@ -50,6 +51,7 @@ with
         -- there are about 56k duplicates in the raw data
         qualify
             row_number() over (partition by observed_at, site_id, parameter_name) = 1
+
     )
 
 select *
