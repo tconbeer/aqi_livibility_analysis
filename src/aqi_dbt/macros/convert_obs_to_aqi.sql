@@ -70,9 +70,9 @@ round(
         when {{ observed_value }} <= {{ concentration }}
         then
             (
-                ({{ aqi }} - {{ prev.aqi }}) / (
-                    {{ concentration }} - {{ prev.concentration }}
-                ) * ({{ observed_value }} - {{ prev.concentration }})
+                ({{ aqi }} - {{ prev.aqi }})
+                / ({{ concentration }} - {{ prev.concentration }})
+                * ({{ observed_value }} - {{ prev.concentration }})
             )
             + {{ prev.aqi }}
             {%- set prev.concentration = concentration -%}
