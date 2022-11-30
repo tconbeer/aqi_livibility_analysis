@@ -1,25 +1,26 @@
 {{
     config(
-        materialized = 'incremental',
-        incremental_strategy = 'insert_overwrite',
-        partition_by = {
-            'field': 'observed_at', 
-            'data_type': 'timestamp',
-            'granularity': 'month'
+        materialized="incremental",
+        incremental_strategy="insert_overwrite",
+        partition_by={
+            "field": "observed_at",
+            "data_type": "timestamp",
+            "granularity": "month",
         },
-        cluster_by = ['site_id', 'parameter_name', 'observed_date'],
-        unique_key = 'id',
+        cluster_by=["site_id", "parameter_name", "observed_date"],
+        unique_key="id",
     )
 }}
 
 with
-    source_table as (select * from {{ source('aqi_raw_data', 'aqi_hourly_observations') }}),
+    source_table as (
+        select * from {{ source("aqi_raw_data", "aqi_hourly_observations") }}
+    ),
     renamed as (
 
         select
-            {{ 
-                dbt_utils.surrogate_key(['observed_at', 'site_id', 'parameter_name']) 
-            }} as id,
+            {{ dbt_utils.surrogate_key(["observed_at", "site_id", "parameter_name"]) }}
+            as id,
 
             observed_at,
             extract(date from observed_at) as observed_date,
@@ -31,26 +32,27 @@ with
             parameter_name,
             reporting_units,
             `value` as observed_value,
-            {{ convert_obs_to_aqi(
-                "source_table.parameter_name",
-                "source_table.reporting_units",
-                "source_table.`value`",
-            ) }} as observed_aqi,
+            {{
+                convert_obs_to_aqi(
+                    "source_table.parameter_name",
+                    "source_table.reporting_units",
+                    "source_table.`value`",
+                )
+            }} as observed_aqi,
 
         from source_table
 
         where
-            (
-                source_table.`value` >= 0
-                or parameter_name = 'TEMP'
-            )
+            (source_table.`value` >= 0 or parameter_name = 'TEMP')
             {% if is_incremental() -%}
             and observed_at > (select max(observed_at) from {{ this }})
             {%- endif %}
 
         -- there are about 56k duplicates in the raw data
-        qualify row_number() over (partition by observed_at, site_id, parameter_name) = 1
+        qualify
+            row_number() over (partition by observed_at, site_id, parameter_name) = 1
 
     )
 
-select * from renamed
+select *
+from renamed
