@@ -1,12 +1,12 @@
 {{
     config(
-        materialized = 'table',
-        cluster_by = ['msa_code'],
+        materialized="table",
+        cluster_by=["msa_code"],
     )
 }}
 
 with
-    dim_sites as (select * from {{ ref('dim_sites') }}),
+    dim_sites as (select * from {{ ref("dim_sites") }}),
 
     aggregated as (
 
@@ -15,7 +15,7 @@ with
             any_value(msa_name) as msa_name,
             st_centroid_agg(geo) as msa_centroid,
             avg(elevation) as msa_elevation,
-        
+
         from dim_sites
         where msa_code is not null
         group by 1
@@ -30,9 +30,10 @@ with
             msa_centroid,
             st_geohash(msa_centroid, 6) as msa_centroid_geohash,
             msa_elevation,
-        
+
         from aggregated
 
     )
 
-select * from final
+select *
+from final
