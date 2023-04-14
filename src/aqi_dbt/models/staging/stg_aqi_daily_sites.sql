@@ -53,7 +53,7 @@ with
         where
             1 = 1
             {% if is_incremental() -%}
-            and observed_date > (select max(observed_date) from {{ this }})
+                and observed_date > (select max(observed_date) from {{ this }})
             {%- endif %}
 
         -- there are about 5k duplicates in the raw data

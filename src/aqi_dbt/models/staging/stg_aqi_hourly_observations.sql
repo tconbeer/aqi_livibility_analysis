@@ -45,7 +45,7 @@ with
         where
             (source_table.`value` >= 0 or parameter_name = 'TEMP')
             {% if is_incremental() -%}
-            and observed_at > (select max(observed_at) from {{ this }})
+                and observed_at > (select max(observed_at) from {{ this }})
             {%- endif %}
 
         -- there are about 56k duplicates in the raw data

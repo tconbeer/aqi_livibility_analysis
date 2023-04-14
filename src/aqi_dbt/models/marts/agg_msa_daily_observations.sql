@@ -39,7 +39,7 @@ with
         where
             site_data.msa_name is not null
             {% if is_incremental() -%}
-            and observed_date >= (select max(observed_date) from {{ this }})
+                and observed_date >= (select max(observed_date) from {{ this }})
             {%- endif %}
 
             {{ dbt_utils.group_by(3) }}

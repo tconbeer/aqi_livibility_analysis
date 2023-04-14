@@ -42,7 +42,7 @@ with
         where
             1 = 1
             {% if is_incremental() -%}
-            and observed_at > (select max(observed_at) from {{ this }})
+                and observed_at > (select max(observed_at) from {{ this }})
             {%- endif %}
 
         group by 1, 2, 3
